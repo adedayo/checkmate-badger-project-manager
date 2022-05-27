@@ -13,12 +13,12 @@ import (
 	"strings"
 	"time"
 
+	gitutils "github.com/adedayo/checkmate-badger-project-manager/pkg/git"
 	common "github.com/adedayo/checkmate-core/pkg"
 	"github.com/adedayo/checkmate-core/pkg/diagnostics"
 	coregitutils "github.com/adedayo/checkmate-core/pkg/git"
 	projects "github.com/adedayo/checkmate-core/pkg/projects"
 	"github.com/adedayo/checkmate-core/pkg/util"
-	gitutils "github.com/adedayo/chekmate-badger-project-manager/pkg/git"
 	"github.com/dgraph-io/badger/v3"
 	"gopkg.in/yaml.v3"
 )
