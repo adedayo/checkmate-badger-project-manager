@@ -15,9 +15,10 @@ import (
 
 	common "github.com/adedayo/checkmate-core/pkg"
 	"github.com/adedayo/checkmate-core/pkg/diagnostics"
-	gitutils "github.com/adedayo/checkmate-core/pkg/git"
+	coregitutils "github.com/adedayo/checkmate-core/pkg/git"
 	projects "github.com/adedayo/checkmate-core/pkg/projects"
 	"github.com/adedayo/checkmate-core/pkg/util"
+	gitutils "github.com/adedayo/chekmate-badger-project-manager/pkg/git"
 	"github.com/dgraph-io/badger/v3"
 	"gopkg.in/yaml.v3"
 )
@@ -151,7 +152,7 @@ func searchFileBasedProjects(pm projects.ProjectManager) (summaries []*projects.
 type dbProjectManager struct {
 	baseDir, projectsLocation, codeBaseDir                        string
 	db                                                            *badger.DB
-	gitConfigManager                                              gitutils.GitConfigManager
+	gitConfigManager                                              coregitutils.GitConfigManager
 	projectTable, workspaceTable, scanDiagnosticsTable            string
 	scanPolicyTable, scanSummaryTable, gitServiceTable, initTable string
 }
@@ -179,7 +180,7 @@ func (pm dbProjectManager) DeleteProject(id string) error {
 }
 
 // GetGitConfigManager implements ProjectManager
-func (pm dbProjectManager) GetGitConfigManager() (gitutils.GitConfigManager, error) {
+func (pm dbProjectManager) GetGitConfigManager() (coregitutils.GitConfigManager, error) {
 
 	if pm.gitConfigManager == nil {
 		cm, e := gitutils.NewDBGitConfigManager(pm.baseDir)
