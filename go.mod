@@ -3,9 +3,9 @@ module github.com/adedayo/checkmate-badger-project-manager
 go 1.18
 
 require (
-	github.com/adedayo/checkmate-core v0.5.6
+	github.com/adedayo/checkmate-core v0.5.7
 	github.com/dgraph-io/badger/v3 v3.2103.2
-	gopkg.in/yaml.v3 v3.0.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -36,11 +36,11 @@ require (
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
-// replace github.com/adedayo/checkmate-core v0.5.6 => ../checkmate-core
+// replace github.com/adedayo/checkmate-core v0.5.7 => ../checkmate-core
