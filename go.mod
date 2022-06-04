@@ -3,7 +3,7 @@ module github.com/adedayo/checkmate-badger-project-manager
 go 1.18
 
 require (
-	github.com/adedayo/checkmate-core v0.5.7
+	github.com/adedayo/checkmate-core v0.6.0
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -29,7 +29,7 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.15.5 // indirect
+	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
@@ -43,4 +43,4 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
-// replace github.com/adedayo/checkmate-core v0.5.7 => ../checkmate-core
+// replace github.com/adedayo/checkmate-core v0.6.0 => ../checkmate-core
