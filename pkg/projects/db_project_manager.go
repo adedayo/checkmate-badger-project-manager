@@ -418,7 +418,7 @@ func (pm dbProjectManager) RunScan(ctx context.Context, projectID string, scanPo
 	scanIDCallback(scanID)
 	ddc := newDBDiagnosticConsumer(projectID, scanID, &pm)
 	consumers = append(consumers, ddc)
-	scannedCommits := projects.RetrieveCommitsToBeScanned(projectID, pm)
+	scannedCommits := projects.RetrieveCommitsToBeScanned(projectID, scanID, pm, progressMonitor)
 	//set "being-scanned" flag
 	summary, err := pm.GetProjectSummary(projectID)
 	if err == nil {
