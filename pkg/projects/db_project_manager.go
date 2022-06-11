@@ -46,7 +46,9 @@ func NewDBProjectManager(checkMateBaseDir string) (projects.ProjectManager, erro
 	//attempt to create the project location if it doesn't exist
 	os.MkdirAll(pm.projectsLocation, 0755)
 
-	opts := badger.DefaultOptions(pm.projectsLocation)
+	//attempt to manage memory by setting WithNum...
+	opts := badger.DefaultOptions(pm.projectsLocation).
+		WithNumMemtables(1).WithNumLevelZeroTables(1).WithNumLevelZeroTablesStall(5)
 
 	//clean up lock on the DB if previous crash
 	lockFile := path.Join(opts.Dir, "LOCK")

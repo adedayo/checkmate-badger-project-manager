@@ -36,7 +36,9 @@ func NewDBGitConfigManager(checkMateBaseDirectory string) (gitutils.GitConfigMan
 	//attempt to create the git config directory if it doesn't exist
 	os.MkdirAll(cm.configLocation, 0755)
 
-	opts := badger.DefaultOptions(cm.configLocation)
+	//attempt to manage memory by setting WithNum...
+	opts := badger.DefaultOptions(cm.configLocation).
+		WithNumMemtables(1).WithNumLevelZeroTables(1).WithNumLevelZeroTablesStall(5)
 
 	//clean up lock on the DB if previous crash
 	lockFile := path.Join(opts.Dir, "LOCK")
