@@ -37,8 +37,7 @@ func NewDBGitConfigManager(checkMateBaseDirectory string) (gitutils.GitConfigMan
 	os.MkdirAll(cm.configLocation, 0755)
 
 	//attempt to manage memory by setting WithNum...
-	opts := badger.DefaultOptions(cm.configLocation).
-		WithNumMemtables(1).WithNumLevelZeroTables(1).WithNumLevelZeroTablesStall(5)
+	opts := badger.DefaultOptions(cm.configLocation) //.WithNumMemtables(1).WithNumLevelZeroTables(1).WithNumLevelZeroTablesStall(5)
 
 	//clean up lock on the DB if previous crash
 	lockFile := path.Join(opts.Dir, "LOCK")
