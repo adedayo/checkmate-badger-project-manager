@@ -551,7 +551,9 @@ func (pm dbProjectManager) SaveWorkspaces(ws *projects.Workspace) error {
 	if ws.Details != nil {
 		for _, wd := range ws.Details {
 			for _, ps := range wd.ProjectSummaries {
-				ps.LastScanSummary.AdditionalInfo.ProdAndNonProdSecretReuse = []projects.ReusedSecret{}
+				if ps.LastScanSummary.AdditionalInfo != nil {
+					ps.LastScanSummary.AdditionalInfo.ProdAndNonProdSecretReuse = []projects.ReusedSecret{}
+				}
 			}
 		}
 	}
