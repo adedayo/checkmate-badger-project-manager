@@ -394,6 +394,10 @@ func (pm dbProjectManager) ListProjectSummaries() []*projects.ProjectSummary {
 				var pSum projects.ProjectSummary
 				err := json.Unmarshal(val, &pSum)
 				if err == nil {
+					if pSum.LastScanSummary.AdditionalInfo != nil {
+						//strip out some unnecessary data in the context of this API's usage
+						pSum.LastScanSummary.AdditionalInfo.ProdAndNonProdSecretReuse = []projects.ReusedSecret{}
+					}
 					pSums = append(pSums, &pSum)
 				}
 				return err
@@ -414,7 +418,11 @@ func (pm dbProjectManager) RemediateIssue(exclude diagnostics.ExcludeRequirement
 }
 
 // RunScan implements ProjectManager
-func (pm dbProjectManager) RunScan(ctx context.Context, projectID string, scanPolicy projects.ScanPolicy, scanner projects.SecurityScanner, scanIDCallback func(string), progressMonitor func(diagnostics.Progress), summariser projects.ScanSummariser, wsSummariser projects.WorkspaceSummariser, consumers ...diagnostics.SecurityDiagnosticsConsumer) {
+func (pm dbProjectManager) RunScan(ctx context.Context, projectID string, scanPolicy projects.ScanPolicy,
+	scanner projects.SecurityScanner, scanIDCallback func(string), progressMonitor func(diagnostics.Progress),
+	summariser projects.ScanSummariser, wsSummariser projects.WorkspaceSummariser,
+	consumers ...diagnostics.SecurityDiagnosticsConsumer) {
+
 	scanID := pm.createScan(projectID, scanPolicy)
 	scanIDCallback(scanID)
 	ddc := newDBDiagnosticConsumer(projectID, scanID, &pm)
@@ -539,6 +547,15 @@ func (pm dbProjectManager) saveScanPolicy(projID, scanID string, policy *project
 
 // SaveWorkspaces implements ProjectManager
 func (pm dbProjectManager) SaveWorkspaces(ws *projects.Workspace) error {
+	//remove details not needed for workspace display
+	if ws.Details != nil {
+		for _, wd := range ws.Details {
+			for _, ps := range wd.ProjectSummaries {
+				ps.LastScanSummary.AdditionalInfo.ProdAndNonProdSecretReuse = []projects.ReusedSecret{}
+			}
+		}
+	}
+
 	return pm.db.Update(func(txn *badger.Txn) error {
 		data, err := json.Marshal(ws)
 		if err != nil {
