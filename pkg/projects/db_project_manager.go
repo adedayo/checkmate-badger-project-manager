@@ -396,7 +396,7 @@ func (pm dbProjectManager) ListProjectSummaries() []*projects.ProjectSummary {
 				if err == nil {
 					if pSum.LastScanSummary.AdditionalInfo != nil {
 						//strip out some unnecessary data in the context of this API's usage
-						pSum.LastScanSummary.AdditionalInfo.ProdAndNonProdSecretReuse = []projects.ReusedSecret{}
+						pSum.LastScanSummary.AdditionalInfo.ProdAndNonProdSecretReuse = nil
 					}
 					pSums = append(pSums, &pSum)
 				}
@@ -405,7 +405,7 @@ func (pm dbProjectManager) ListProjectSummaries() []*projects.ProjectSummary {
 		}
 		return nil
 	})
-	sorted := make(projects.ProjectSummarySlice, 0)
+	sorted := make(projects.ProjectSummarySlice, 0, len(pSums))
 	sorted = append(sorted, pSums...)
 	sort.Sort(sorted)
 
@@ -620,13 +620,15 @@ func (ddc *dbDiagnosticConsumer) ReceiveDiagnostic(diag *diagnostics.SecurityDia
 
 func (ddc *dbDiagnosticConsumer) close() error {
 	//write the collected diagnostics to db
-	return ddc.db.Update(func(txn *badger.Txn) error {
+	e := ddc.db.Update(func(txn *badger.Txn) error {
 		data, err := json.Marshal(ddc.diagnostics)
 		if err != nil {
 			return err
 		}
 		return txn.Set(ddc.table, data)
 	})
+	ddc.diagnostics = nil
+	return e
 }
 
 func newDBDiagnosticConsumer(projectID, scanID string, pm *dbProjectManager) *dbDiagnosticConsumer {
