@@ -3,7 +3,7 @@ module github.com/adedayo/checkmate-badger-project-manager
 go 1.18
 
 require (
-	github.com/adedayo/checkmate-core v0.8.2
+	github.com/adedayo/checkmate-core v0.8.4
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	gopkg.in/yaml.v3 v3.0.1
 )
