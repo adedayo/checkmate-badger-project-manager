@@ -52,12 +52,13 @@ func NewDBGitConfigManager(checkMateBaseDirectory string) (gitutils.GitConfigMan
 	err = cm.initialiseGitConfig()
 	if err != nil {
 		log.Printf("Error initialising git config: %v", err)
+		return cm, err
 	}
 	gitConfigManager = cm
 	gitConfigManagers[checkMateBaseDirectory] = cm
 
 	//import data from the YAML-based config if it exists
-	importGitYAMLData(cm)
+	// importGitYAMLData(cm)
 
 	return gitConfigManager, nil
 }
