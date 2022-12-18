@@ -41,6 +41,8 @@ func NewDBProjectManager(checkMateBaseDir string) (projects.ProjectManager, erro
 		scanSummaryTable:     "ssum_",
 		gitServiceTable:      "gits_",
 		initTable:            "init_",
+		rootCertTable:        "rcert_",
+		leafCertTable:        "lcert_",
 	}
 
 	//attempt to create the project location if it doesn't exist
@@ -62,7 +64,50 @@ func NewDBProjectManager(checkMateBaseDir string) (projects.ProjectManager, erro
 	//import data from the YAML-based config if it exists
 	importYAMLData(&pm)
 
+	//generate operational certs as may be necessary
+	generateCerts(&pm)
+
 	return pm, nil
+}
+
+func generateCerts(pm *dbProjectManager) {
+	err := pm.db.View(func(txn *badger.Txn) error {
+		_, err := txn.Get(toKey(pm.rootCertTable))
+		return err
+	})
+
+	//TODO: workflow for renewing expired leaf certificate
+	if errors.Is(err, badger.ErrKeyNotFound) {
+		//create table and store root certificate
+
+		if cert, key, err := util.GenerateRootCert(); err == nil {
+			if cb, err := util.EncodeCert(cert, cert, &key.PublicKey, key); err == nil {
+				pm.db.Update(func(txn *badger.Txn) error {
+					return txn.Set(toKey(pm.rootCertTable, "cert"), cb)
+				})
+			}
+
+			if kb, err := util.EncodeKey(key); err == nil {
+				pm.db.Update(func(txn *badger.Txn) error {
+					return txn.Set(toKey(pm.rootCertTable, "key"), kb)
+				})
+			}
+
+			if lc, lk, err := util.GenerateLeafCertificate(cert, key); err == nil {
+				if cb, err := util.EncodeCert(lc, cert, &lk.PublicKey, key); err == nil {
+					pm.db.Update(func(txn *badger.Txn) error {
+						return txn.Set(toKey(pm.leafCertTable, "cert"), cb)
+					})
+				}
+
+				if kb, err := util.EncodeKey(lk); err == nil {
+					pm.db.Update(func(txn *badger.Txn) error {
+						return txn.Set(toKey(pm.leafCertTable, "key"), kb)
+					})
+				}
+			}
+		}
+	}
 }
 
 func importYAMLData(pm *dbProjectManager) {
@@ -151,11 +196,12 @@ func searchFileBasedProjects(pm projects.ProjectManager) (summaries []*projects.
 }
 
 type dbProjectManager struct {
-	baseDir, projectsLocation, codeBaseDir                        string
-	db                                                            *badger.DB
-	gitConfigManager                                              coregitutils.GitConfigManager
+	baseDir, projectsLocation, codeBaseDir string
+	db                                     *badger.DB
+	// gitConfigManager                                              coregitutils.GitConfigManager
 	projectTable, workspaceTable, scanDiagnosticsTable            string
 	scanPolicyTable, scanSummaryTable, gitServiceTable, initTable string
+	rootCertTable, leafCertTable                                  string
 }
 
 // DeleteProject implements ProjectManager
@@ -180,23 +226,51 @@ func (pm dbProjectManager) DeleteProject(id string) error {
 	return nil
 }
 
+// GetAPICertificate implements ProjectManager
+func (pm dbProjectManager) GetAPICertificate() (cert []byte, key []byte, err error) {
+
+	err = pm.db.View(func(txn *badger.Txn) error {
+		item, e := txn.Get(toKey(pm.leafCertTable, "cert"))
+		if e == nil {
+			item.Value(func(val []byte) error {
+				cert = val
+				return nil
+			})
+		} else {
+			return e
+		}
+
+		item, e = txn.Get(toKey(pm.leafCertTable, "key"))
+		if e == nil {
+			return item.Value(func(val []byte) error {
+				key = val
+				return nil
+			})
+		}
+		return e
+	})
+	return
+}
+
 // GetGitConfigManager implements ProjectManager
 func (pm dbProjectManager) GetGitConfigManager() (coregitutils.GitConfigManager, error) {
 
-	if pm.gitConfigManager == nil {
-		cm, e := gitutils.NewDBGitConfigManager(pm.baseDir)
-		pm.gitConfigManager = cm
-		return cm, e
-	}
+	// if pm.gitConfigManager == nil {
+	// 	cm, e := gitutils.NewDBGitConfigManager(pm.baseDir)
+	// 	pm.gitConfigManager = cm
+	// 	return cm, e
+	// }
 
-	return pm.gitConfigManager, nil
+	// return pm.gitConfigManager, nil
+
+	return gitutils.NewDBGitConfigManager(pm.baseDir)
 }
 
 func (pm dbProjectManager) Close() error {
 	if pm.db != nil {
 		return pm.db.Close()
 	}
-	return errors.New("Attempting to close uninitialised DB")
+	return errors.New("attempting to close uninitialised DB")
 }
 
 // CreateProject implements ProjectManager
@@ -314,7 +388,7 @@ func (pm dbProjectManager) GetScanConfig(projectID string, scanID string) (*proj
 
 			}
 		}
-		return fmt.Errorf("Could not find Policy for Project %s and ScanID %s", projectID, scanID)
+		return fmt.Errorf("could not find Policy for Project %s and ScanID %s", projectID, scanID)
 	})
 
 	return &pol, err
@@ -442,7 +516,7 @@ func (pm dbProjectManager) RunScan(ctx context.Context, projectID string, scanPo
 		ScanID:      scanID,
 		Position:    0,
 		Total:       1,
-		CurrentFile: fmt.Sprintf("starting scan ..."),
+		CurrentFile: "starting scan ...",
 	})
 
 	scanner.Scan(ctx, projectID, scanID, pm, progressMonitor, consumers...)
