@@ -3,7 +3,6 @@ package gitdb
 import (
 	"encoding/json"
 	"errors"
-	"io/fs"
 	"log"
 	"os"
 	"path"
@@ -15,10 +14,10 @@ import (
 
 var (
 	gitConfigManagers = map[string]gitutils.GitConfigManager{} // checkmateBaseDir -> ConfigManager
-	gitConfigManager  gitutils.GitConfigManager
+	// gitConfigManager  gitutils.GitConfigManager
 )
 
-//Git Service Config Manager
+// Git Service Config Manager
 func NewDBGitConfigManager(checkMateBaseDirectory string) (gitutils.GitConfigManager, error) {
 
 	//ensure the DB is singleton per base dir
@@ -54,16 +53,16 @@ func NewDBGitConfigManager(checkMateBaseDirectory string) (gitutils.GitConfigMan
 		log.Printf("Error initialising git config: %v", err)
 		return cm, err
 	}
-	gitConfigManager = cm
+	// gitConfigManager = cm
 	gitConfigManagers[checkMateBaseDirectory] = cm
 
 	//import data from the YAML-based config if it exists
 	// importGitYAMLData(cm)
 
-	return gitConfigManager, nil
+	return cm, nil
 }
 
-//ensure the git config table is initialised if not already present
+// ensure the git config table is initialised if not already present
 func (cm dbGitConfigManager) initialiseGitConfig() error {
 
 	err := cm.db.View(func(txn *badger.Txn) error {
@@ -86,31 +85,31 @@ func (cm dbGitConfigManager) initialiseGitConfig() error {
 	return err
 }
 
-func importGitYAMLData(cm *dbGitConfigManager) {
+// func importGitYAMLData(cm *dbGitConfigManager) {
 
-	err := cm.db.View(func(txn *badger.Txn) error {
-		_, err := txn.Get(toKey(cm.initTable))
-		return err
-	})
+// 	err := cm.db.View(func(txn *badger.Txn) error {
+// 		_, err := txn.Get(toKey(cm.initTable))
+// 		return err
+// 	})
 
-	if errors.Is(err, badger.ErrKeyNotFound) {
-		//create table
-		cm.db.Update(func(txn *badger.Txn) error {
-			return txn.Set(toKey(cm.initTable), []byte{})
-		})
+// 	if errors.Is(err, badger.ErrKeyNotFound) {
+// 		//create table
+// 		cm.db.Update(func(txn *badger.Txn) error {
+// 			return txn.Set(toKey(cm.initTable), []byte{})
+// 		})
 
-		//only do this if the YAML config exists
-		if _, err := os.Stat(path.Join(cm.baseDir, "config", gitutils.GIT_SERVICE_CONFIG_FILE)); !errors.Is(err, fs.ErrNotExist) {
-			yamlConfig := gitutils.NewGitConfigManager(cm.baseDir)
-			if config, err := yamlConfig.GetConfig(); err == nil {
-				cm.SaveConfig(config)
-			}
-			//return global git config manager to the db one
-			gitConfigManager = cm
-		}
+// 		//only do this if the YAML config exists
+// 		if _, err := os.Stat(path.Join(cm.baseDir, "config", gitutils.GIT_SERVICE_CONFIG_FILE)); !errors.Is(err, fs.ErrNotExist) {
+// 			yamlConfig := gitutils.NewGitConfigManager(cm.baseDir)
+// 			if config, err := yamlConfig.GetConfig(); err == nil {
+// 				cm.SaveConfig(config)
+// 			}
+// 			//return global git config manager to the db one
+// 			gitConfigManager = cm
+// 		}
 
-	}
-}
+// 	}
+// }
 
 type dbGitConfigManager struct {
 	baseDir        string ///CheckMate base directory
@@ -126,6 +125,7 @@ func (cm *dbGitConfigManager) GetConfig() (*gitutils.GitServiceConfig, error) {
 	config := gitutils.GitServiceConfig{
 		GitServices: make(map[gitutils.GitServiceType]map[string]*gitutils.GitService),
 	}
+	config.SetConfigManager(cm)
 	err := cm.db.View(func(txn *badger.Txn) error {
 		item, rerr := txn.Get(toKey(cm.gitConfigTable))
 		if rerr != nil {
