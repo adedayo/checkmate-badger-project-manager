@@ -493,7 +493,7 @@ func (pm dbProjectManager) RemediateIssue(exclude diagnostics.ExcludeRequirement
 
 // RunScan implements ProjectManager
 func (pm dbProjectManager) RunScan(ctx context.Context, projectID string, scanPolicy projects.ScanPolicy,
-	scanner projects.SecurityScanner, scanIDCallback func(string), progressMonitor func(diagnostics.Progress),
+	scanner projects.SecurityScanner, scanIDCallback func(string), repoStatusChecker projects.RepositoryStatusChecker, progressMonitor func(diagnostics.Progress),
 	summariser projects.ScanSummariser, wsSummariser projects.WorkspaceSummariser,
 	consumers ...diagnostics.SecurityDiagnosticsConsumer) {
 
@@ -519,7 +519,7 @@ func (pm dbProjectManager) RunScan(ctx context.Context, projectID string, scanPo
 		CurrentFile: "starting scan ...",
 	})
 
-	scanner.Scan(ctx, projectID, scanID, pm, progressMonitor, consumers...)
+	scanner.Scan(ctx, projectID, scanID, pm, repoStatusChecker, progressMonitor, consumers...)
 	scanEndTime := time.Now()
 	ddc.close()
 	if scanSummary, err := pm.summariseScanResults(projectID, scanID, summariser); err == nil {
