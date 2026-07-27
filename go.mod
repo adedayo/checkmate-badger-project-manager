@@ -3,7 +3,7 @@ module github.com/adedayo/checkmate-badger-project-manager
 go 1.26.1
 
 require (
-	github.com/adedayo/checkmate-core v0.9.4
+	github.com/adedayo/checkmate-core v0.9.6
 	github.com/dgraph-io/badger/v3 v3.2103.2
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -49,4 +49,4 @@ require (
 
 // replace github.com/adedayo/checkmate-core v0.9.3 => ../checkmate-core
 
-replace github.com/adedayo/checkmate-core v0.9.4 => ../checkmate-core
+replace github.com/adedayo/checkmate-core v0.9.6 => ../checkmate-core
