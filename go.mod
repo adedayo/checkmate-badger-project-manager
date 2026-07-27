@@ -44,7 +44,3 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
-
-// replace github.com/adedayo/checkmate-core v0.9.3 => ../checkmate-core
-
-replace github.com/adedayo/checkmate-core v1.0.9 => ../checkmate-core
