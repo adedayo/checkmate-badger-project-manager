@@ -44,3 +44,7 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
+
+replace github.com/adedayo/checkmate-badger-project-manager => ../checkmate-badger-project-manager
+
+replace github.com/adedayo/checkmate-core => ../checkmate-core
